@@ -73,11 +73,6 @@
       var text = lines.join('\n');
       var url = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(text);
 
-      // Salva anche su Netlify Forms
-      try{
-        fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:encode(data), keepalive:true}).catch(function(){});
-      }catch(err){}
-
       var success = form.parentElement.querySelector('.form-success');
       var waBtn = success && success.querySelector('.js-wa-again');
       if(waBtn) waBtn.setAttribute('href', url);
