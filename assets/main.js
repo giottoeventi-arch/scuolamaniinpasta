@@ -88,38 +88,61 @@
   });
 
 
-  // Popup locandina: compare all'ingresso per 4 secondi (una volta per sessione)
+  // Popup locandina: compare all'ingresso per 4 secondi (una volta per sessione).
+  // Per cambiare locandina basta aggiungere una voce qui sotto con le sue date:
+  // compare la prima voce il cui periodo comprende il giorno di oggi.
   (function(){
-    var PROMO_URL = 'corso-panettone.html';
-    if (location.pathname.indexOf('corso-panettone') !== -1) return;
-    // Il popup non compare più dal 25 novembre 2026 (ora italiana)
-    var PROMO_FINE = new Date('2026-11-25T00:00:00+01:00');
-    if (new Date() >= PROMO_FINE) return;
-    try { if (sessionStorage.getItem('promoPanettone')) return; } catch(e){}
+    var PROMOS = [
+      {
+        id: 'promoPanettone',
+        pagina: 'corso-panettone.html',
+        testa: 'Nuovo corso in arrivo',
+        img: 'locandina-panettone',
+        alt: 'Corso di panettone artigianale con Marco Manzi, sabato 28 e domenica 29 novembre, 200 euro, Pizzeria Giotto Firenze',
+        da: '2026-11-01T00:00:00+01:00',
+        a:  '2026-11-25T00:00:00+01:00'
+      },
+      {
+        id: 'promoPizzaGennaio',
+        pagina: 'corso-pizza-napoletana-e-in-teglia.html',
+        testa: 'Nuove date a gennaio',
+        img: 'locandina-pizza-gennaio',
+        alt: 'Corso di pizza napoletana e in teglia con Marco Manzi: venerd\u00ec 8 e sabato 9 gennaio oppure venerd\u00ec 15 e sabato 16 gennaio, 150 euro, Pizzeria Giotto Firenze',
+        da: '2026-11-25T00:00:00+01:00',
+        a:  '2027-01-17T00:00:00+01:00'
+      }
+    ];
+    var adesso = new Date(), promo = null;
+    for (var i = 0; i < PROMOS.length; i++){
+      if (adesso >= new Date(PROMOS[i].da) && adesso < new Date(PROMOS[i].a)) { promo = PROMOS[i]; break; }
+    }
+    if (!promo) return;
+    if (location.pathname.indexOf(promo.pagina.replace('.html','')) !== -1) return;
+    try { if (sessionStorage.getItem(promo.id)) return; } catch(e){}
+    var SM = 'img/' + promo.img + '-sm.webp', LG = 'img/' + promo.img + '-lg.webp';
     var box = document.createElement('div');
-    box.className = 'promo'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label','Nuovo corso in arrivo');
+    box.className = 'promo'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label', promo.testa);
     box.innerHTML = '<div class="promo-card">' +
-      '<div class="promo-head">Nuovo corso in arrivo</div>' +
+      '<div class="promo-head">' + promo.testa + '</div>' +
       '<button class="promo-close" type="button" aria-label="Chiudi">&times;</button>' +
-      '<a class="promo-link" href="' + PROMO_URL + '">' +
-        '<img src="img/locandina-panettone-sm.webp" srcset="img/locandina-panettone-sm.webp 720w, img/locandina-panettone-lg.webp 1200w" sizes="420px" width="720" height="900" alt="Corso di panettone artigianale con Marco Manzi, sabato 28 e domenica 29 novembre, 200 euro, Pizzeria Giotto Firenze">' +
+      '<a class="promo-link" href="' + promo.pagina + '">' +
+        '<img src="' + SM + '" srcset="' + SM + ' 720w, ' + LG + ' 1200w" sizes="420px" width="720" height="900" alt="' + promo.alt + '">' +
         '<span class="promo-cta">Scopri il corso e iscriviti &rarr;</span>' +
       '</a><span class="promo-bar"></span></div>';
     var timer;
     function close(){ box.classList.remove('show'); clearTimeout(timer); setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 500); document.removeEventListener('keydown', onKey); }
     function onKey(e){ if(e.key === 'Escape') close(); }
     box.addEventListener('click', function(e){ if(e.target === box || e.target.closest('.promo-close')) close(); });
-    var img = box.querySelector('img');
     function open(){
       document.body.appendChild(box);
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ box.classList.add('show'); }); });
       timer = setTimeout(close, 4400);
       document.addEventListener('keydown', onKey);
-      try { sessionStorage.setItem('promoPanettone','1'); } catch(e){}
+      try { sessionStorage.setItem(promo.id,'1'); } catch(e){}
     }
     var started = false;
     function start(){ if(started) return; started = true; setTimeout(open, 600); }
-    var pre = new Image(); pre.onload = start; pre.onerror = start; pre.src = 'img/locandina-panettone-sm.webp';
+    var pre = new Image(); pre.onload = start; pre.onerror = start; pre.src = SM;
     setTimeout(start, 2500);
   })();
 
